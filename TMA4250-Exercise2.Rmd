@@ -35,15 +35,105 @@ library(akima)
 library(spatial)
 ```
 # Problem 1: Analysis of Point Patterns
-
+## a)
+We consider the three real data point patterns found in the R package `MASS`.
 ```{r, echo = F, eval = T, out.width = "33%"}
 library(MASS)
 data_cells <- ppinit("cells.dat")
 data_redwood <- ppinit("redwood.dat")
+data_redwood$y <- data_redwood$y+1
 data_pines <- ppinit("pines.dat")
 
 plot(data_cells, main = "Data from cells.dat file", xlab = "x", ylab = "y")
 plot(data_redwood, main = "Data from redwood.dat file",xlab = "x", ylab = "y")
 plot(data_pines, main = "Data from pines.dat file",xlab = "x", ylab = "y")
+```
+## b)
+
+```{r, echo = F, eval = T, out.width = "33%"}
+cells_L <- Kfn(data_cells,1)
+#cells_L$y <- cells_L$y/cells_L$x
+redwood_L <- Kfn(data_redwood, 1)
+#redwood_L$y <- redwood_L$y/redwood_L$x
+pines_L <- Kfn(data_pines,7)
+#pines_L$y <- pines_L$y/pines_L$x
+plot(cells_L, type="s", xlab="distance", ylab="L(t)")
+lines(seq(0,1,out.length=100),seq(0,1,length.out=100))
+plot(redwood_L, type="s", xlab="distance", ylab="L(t)")
+lines(seq(0,1,out.length=100),seq(0,1,length.out=100))
+plot(pines_L, type="s", xlab="distance", ylab="L(t)")
+lines(seq(0,7,out.length=100),seq(0,7,length.out=100))
+```
+
+## c)
+```{r, echo = F, eval = T}
+k_cells <- length(data_cells$y)
+k_redwood <- length(data_redwood$y)
+k_pines <- length(data_pines$y)
+L_matrix_cells <- matrix(NA, nrow = 100, ncol = length(cells_L$x))
+L_matrix_redwood <- matrix(NA, nrow = 100, ncol = length(redwood_L$x))
+L_matrix_pines <- matrix(NA, nrow = 100, ncol = length(pines_L$x))
+for (i in 1:100){
+  df_cells = data.frame(x = runif(k_cells,0,1), y = runif(k_cells,0,1))
+  df_redwood = data.frame(x = runif(k_redwood,0,1), y = runif(k_redwood,0,1))
+  df_pines = data.frame(x = runif(k_pines,0,9), y = runif(k_pines,0,9))
+  L_matrix_cells[i,] = Kfn(df_cells,1)$y
+  L_matrix_redwood[i,] = Kfn(df_redwood,1)$y
+  L_matrix_pines[i,] = Kfn(df_pines,7)$y
+}
+
+pred_interval_cells <- apply(L_matrix_cells,2,sort)
+rownames(L_matrix_cells) = paste("trial", seq(100), sep="")
+colnames(L_matrix_cells) = paste("x", seq(length(cells_L$x)), sep="")
+
+dat_cells = as.data.frame(L_matrix_cells)
+dat_cells$trial = rownames(L_matrix_cells)
+mdat_cells = melt(dat_cells, id.vars="trial")
+mdat_cells$x = as.numeric(gsub("x", "", mdat_cells$variable))
+df_cells = data.frame(x = seq(1,100), pred = cells_L$y, lb = pred_interval_cells[5,], ub = pred_interval_cells[95,])
+
+ggplot() +
+    theme_bw() +
+    theme(panel.grid=element_blank()) +
+    geom_line(data = mdat_cells, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
+    geom_line(data = df_cells, aes(x = x, y = pred), size = 1, col = 'red') + 
+    geom_line(data = df_cells, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
+    geom_line(data = df_cells, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed")
+
+pred_interval_redwood <- apply(L_matrix_redwood,2,sort)
+rownames(L_matrix_redwood) = paste("trial", seq(100), sep="")
+colnames(L_matrix_redwood) = paste("x", seq(length(redwood_L$x)), sep="")
+
+dat_redwood = as.data.frame(L_matrix_redwood)
+dat_redwood$trial = rownames(L_matrix_redwood)
+mdat_redwood = melt(dat_redwood, id.vars="trial")
+mdat_redwood$x = as.numeric(gsub("x", "", mdat_redwood$variable))
+df_redwood = data.frame(x = seq(1,100), pred = redwood_L$y, lb = pred_interval_redwood[5,], ub = pred_interval_redwood[95,])
+
+ggplot() +
+    theme_bw() +
+    theme(panel.grid=element_blank()) +
+    geom_line(data = mdat_redwood, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
+    geom_line(data = df_redwood, aes(x = x, y = pred), size = 1, col = 'red') + 
+    geom_line(data = df_redwood, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
+    geom_line(data = df_redwood, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed")
+
+pred_interval_pines <- apply(L_matrix_pines,2,sort)
+rownames(L_matrix_pines) = paste("trial", seq(100), sep="")
+colnames(L_matrix_pines) = paste("x", seq(length(pines_L$x)), sep="")
+
+dat_pines = as.data.frame(L_matrix_pines)
+dat_pines$trial = rownames(L_matrix_pines)
+mdat_pines = melt(dat_pines, id.vars="trial")
+mdat_pines$x = as.numeric(gsub("x", "", mdat_pines$variable))
+df_pines = data.frame(x = seq(1,99), pred = pines_L$y, lb = pred_interval_pines[5,], ub = pred_interval_pines[95,])
+
+ggplot() +
+    theme_bw() +
+    theme(panel.grid=element_blank()) +
+    geom_line(data = mdat_pines, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
+    geom_line(data = df_pines, aes(x = x, y = pred), size = 1, col = 'red') + 
+    geom_line(data = df_pines, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
+    geom_line(data = df_pines, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed")
 ```
 
