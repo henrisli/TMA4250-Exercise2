@@ -137,3 +137,21 @@ ggplot() +
     geom_line(data = df_pines, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed")
 ```
 
+
+
+# Problem 2: Bayesian inversion in Poisson RF
+
+```{r, echo = F, eval = T, out.width = "33%"}
+library(MASS)
+
+obspines <- read.table("https://www.math.ntnu.no/emner/TMA4250/2018v/Exercise2/obspines.txt")[2:901,]
+obsprob <- read.table("https://www.math.ntnu.no/emner/TMA4250/2018v/Exercise2/obsprob.txt")[2:901,]
+
+#interpolation = interp(obsprob$V1, obsprob$V2, obsprob$V3)
+image.plot(obsprob)
+
+
+plot(obspines, main = "Data from cells.dat file", xlab = "x", ylab = "y")
+plot(data_redwood, main = "Data from redwood.dat file",xlab = "x", ylab = "y")
+plot(data_pines, main = "Data from pines.dat file",xlab = "x", ylab = "y")
+```
