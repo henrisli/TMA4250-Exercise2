@@ -1,0 +1,37 @@
+--- 
+title: "TMA4250 Spatial Statistics Exercise 1, Spring 2019"
+output:
+  pdf_document:
+    toc: no
+    toc_depth: '2'
+  word_document:
+    toc: no
+    toc_depth: '2'
+  html_document:
+    toc: no
+    toc_depth: 2
+    toc_float: yes
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+subtitle: 'Group members: Henrik Syversveen Lie, Øyvind Auestad'
+---
+
+
+```{r setup, include = FALSE}
+library(formatR)
+showsol <- FALSE
+library(knitr)
+opts_chunk$set(tidy.opts = list(width.cutoff = 68), tidy = TRUE, warning = FALSE, error = FALSE, message = FALSE, echo = TRUE)
+```
+
+
+```{r, echo = F, eval = T}
+library(reshape2)
+library(geoR)
+library(ggplot2)
+library(MASS)
+library(cowplot)
+library(fields)
+library(akima)
+
+```
+
