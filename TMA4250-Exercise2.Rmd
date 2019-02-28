@@ -32,6 +32,18 @@ library(MASS)
 library(cowplot)
 library(fields)
 library(akima)
+library(spatial)
+```
+# Problem 1: Analysis of Point Patterns
 
+```{r, echo = F, eval = T, out.width = "33%"}
+library(MASS)
+data_cells <- ppinit("cells.dat")
+data_redwood <- ppinit("redwood.dat")
+data_pines <- ppinit("pines.dat")
+
+plot(data_cells, main = "Data from cells.dat file", xlab = "x", ylab = "y")
+plot(data_redwood, main = "Data from redwood.dat file",xlab = "x", ylab = "y")
+plot(data_pines, main = "Data from pines.dat file",xlab = "x", ylab = "y")
 ```
 
