@@ -141,17 +141,34 @@ ggplot() +
 
 # Problem 2: Bayesian inversion in Poisson RF
 
-```{r, echo = F, eval = T, out.width = "33%"}
-library(MASS)
-
+```{r, echo = F, eval = T, out.width = "50%"}
 obspines <- read.table("https://www.math.ntnu.no/emner/TMA4250/2018v/Exercise2/obspines.txt")[2:901,]
 obsprob <- read.table("https://www.math.ntnu.no/emner/TMA4250/2018v/Exercise2/obsprob.txt")[2:901,]
 
-#interpolation = interp(obsprob$V1, obsprob$V2, obsprob$V3)
-image.plot(obsprob)
+colnames(obsprob) <- c("x","y","z")
+colnames(obspines) <- c("x","y","z")
 
+obspines$x <- as.numeric(obspines$x)
+obspines$y <- as.numeric(obspines$y)
+obspines$z <- as.numeric(obspines$z)
 
-plot(obspines, main = "Data from cells.dat file", xlab = "x", ylab = "y")
-plot(data_redwood, main = "Data from redwood.dat file",xlab = "x", ylab = "y")
-plot(data_pines, main = "Data from pines.dat file",xlab = "x", ylab = "y")
+obsprob$x <- as.numeric(obsprob$x)
+obsprob$y <- as.numeric(obsprob$y)
+obsprob$z <- as.numeric(obsprob$z)
+
+obsprob$z[obsprob$z>=62] = obsprob$z[obsprob$z>=62]+1
+obsprob$z = 0.04 + (obsprob$z-1)*0.01
+
+obsprob = obsprob[order( obsprob[,1], obsprob[,2] ),]
+probabilities = list(x = seq(5,295,10), y = seq(5,295,10), z = t(matrix(obsprob$z, ncol = 30)))
+image.plot(probabilities)
+
+#interpolation <- interp(obsprob$x, obsprob$y, obsprob$z)
+#image.plot(interpolation)
+
+obspines$z = obspines$z - 1
+obspines = obspines[order( obspines[,1], obspines[,2] ),]
+trees = list(x = seq(5,295,10), y = seq(5,295,10), z = t(matrix(obspines$z, ncol = 30)))
+
+image.plot(trees)
 ```
