@@ -48,6 +48,7 @@ plot(data_cells, main = "Data from cells.dat file", xlab = "x", ylab = "y")
 plot(data_redwood, main = "Data from redwood.dat file",xlab = "x", ylab = "y")
 plot(data_pines, main = "Data from pines.dat file",xlab = "x", ylab = "y")
 ```
+
 ## b)
 
 ```{r, echo = F, eval = T, out.width = "33%"}
@@ -58,11 +59,11 @@ redwood_L <- Kfn(data_redwood, 1)
 pines_L <- Kfn(data_pines,7)
 #pines_L$y <- pines_L$y/pines_L$x
 plot(cells_L, type="s", xlab="distance", ylab="L(t)")
-lines(seq(0,1,out.length=100),seq(0,1,length.out=100))
+lines(seq(0,1,length.out=100),seq(0,1,length.out =100))
 plot(redwood_L, type="s", xlab="distance", ylab="L(t)")
-lines(seq(0,1,out.length=100),seq(0,1,length.out=100))
+lines(seq(0,1,length.out=100),seq(0,1,length.out=100))
 plot(pines_L, type="s", xlab="distance", ylab="L(t)")
-lines(seq(0,7,out.length=100),seq(0,7,length.out=100))
+lines(seq(0,7,length.out=100),seq(0,7,length.out=100))
 ```
 
 ## c)
@@ -140,7 +141,10 @@ ggplot() +
 
 
 # Problem 2: Bayesian inversion in Poisson RF
+We consider an area of size $(300\times 300)$ m$^2$ containing a pine tree forest, and the actual locations of the pine trees are to be assessed. The pine tree locations are observed from a satellite by remote sensing, and due to partly cloudy weather the observation probability for individual trees vary across the area. We discretize the area into a regular $(30\times30)$-grid $L$ with grid unit size $\Delta_n = 100$m$^2$. The true, but unknown, number of pine trees located in each grid unit is the $n$-vector $k$, with $\{k(\mathbf{x}); \mathbf{x}\in L\}$. The probabilites for observing a tree in each grid unit is represented by the $n$-vector $\{\alpha(\mathbf{x});\mathbf{x}\in L\}$, which vary across the area. We also denote by the $n$-vector $\{d(\mathbf{x});\mathbf{x}\in L\}$ the number of trees observed in each grid unit.
 
+## a)
+First, we display the observations and the observation probabilities across the grid. The observation probabilities vary from $0.04$ to $0.67$, and the number of observed trees in each grid unit varies between 0 and 3.
 ```{r, echo = F, eval = T, out.width = "50%"}
 obspines <- read.table("https://www.math.ntnu.no/emner/TMA4250/2018v/Exercise2/obspines.txt")[2:901,]
 obsprob <- read.table("https://www.math.ntnu.no/emner/TMA4250/2018v/Exercise2/obsprob.txt")[2:901,]
@@ -172,3 +176,13 @@ trees = list(x = seq(5,295,10), y = seq(5,295,10), z = t(matrix(obspines$z, ncol
 
 image.plot(trees)
 ```
+
+We further assume that the observations given the true number of trees are spatially uncorrelated from one grid unit to another. We then specify the likelihood model for the observations. For each grid unit $i$ one has a binomial likelihood model with $d_i \leq k_i$,
+$$[d_i|k_i] \sim p(d_i|k_i) = \begin{pmatrix}k_i\\d_i \end{pmatrix} \alpha_i^{d_i}[1-\alpha_i]^{k_i-d_i}.$$
+Because the observations are conditionally independent from one node to another, the likelihood model with $\mathbf{d}\leq \mathbf{k}$ is,
+$$[\mathbf{d}|\mathbf{k}] \sim p(\mathbf{d}|\mathbf{k}) = \prod_{i=1}^n p(d_i|k_i) = \prod_{i=1}^n \begin{pmatrix} k_i\\d_i\end{pmatrix} \alpha_i^{d_i}[1-\alpha_i]^{k_i-d_i}.$$
+
+## b)
+To further specify our model, we assume apriori that the distribution of trees is according to a stationary Poisson RF with model parameter $\lambda_k$. The prior Poisson model is defined on the discretized event count representation $\mathbf{k}\in \mathbb{N}^n_\oplus$ as follows,
+$$ \mathbf{k} \sim p(\mathbf{k}) = \prod_{i=1}^n p(k_i) = \prod_{i=1}^n \frac{\pi_k^{k_i}}{k_i!}\times \exp\{-\pi_k\} =  \frac{\pi_k^{\sum_{i}k_i}}{\prod_{i}k_i!}\times \exp\{-n\pi_k\},$$
+which is a discretized spatially stationary Poisson count RF with $\{\lambda(\mathbf{x}) = \lambda_k;\mathbf{x}\in D\}$ and $\pi_k = \lambda_k \Delta_n$ and basis-event set $\mathbb{E} = \emptyset$.
