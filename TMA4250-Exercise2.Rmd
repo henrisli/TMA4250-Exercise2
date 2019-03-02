@@ -1,18 +1,22 @@
 --- 
 title: "TMA4250 Spatial Statistics Exercise 1, Spring 2019"
-output:
-  pdf_document:
-    toc: no
-    toc_depth: '2'
-  word_document:
-    toc: no
-    toc_depth: '2'
-  html_document:
-    toc: no
-    toc_depth: 2
-    toc_float: yes
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output:
+  pdf_document: default
+  bookdown::html_document2: default
+  html_document:
+    df_print: paged
 subtitle: 'Group members: Henrik Syversveen Lie, Øyvind Auestad'
+references:
+- id: Omre
+  title: Bayesian Spatial Inversion with Conjugate Prior Models
+  author:
+  - family: Omre
+    given: Henning
+  type: article-journal
+  issued:
+    year: 2019
+    month: 1
 ---
 
 
@@ -34,6 +38,7 @@ library(fields)
 library(akima)
 library(spatial)
 ```
+
 # Problem 1: Analysis of Point Patterns
 ## a)
 We consider the three real data point patterns found in the R package `MASS`.
@@ -41,7 +46,7 @@ We consider the three real data point patterns found in the R package `MASS`.
 library(MASS)
 data_cells <- ppinit("cells.dat")
 data_redwood <- ppinit("redwood.dat")
-data_redwood$y <- data_redwood$y+1
+data_redwood$y <- -data_redwood$y
 data_pines <- ppinit("pines.dat")
 
 plot(data_cells, main = "Data from cells.dat file", xlab = "x", ylab = "y")
@@ -50,6 +55,7 @@ plot(data_pines, main = "Data from pines.dat file",xlab = "x", ylab = "y")
 ```
 
 ## b)
+We then want to compute the empirical $L$-function for each of the point patterns, and uses the R function `Kfn()` to do this. 
 
 ```{r, echo = F, eval = T, out.width = "33%"}
 cells_L <- Kfn(data_cells,1)
@@ -67,7 +73,7 @@ lines(seq(0,7,length.out=100),seq(0,7,length.out=100))
 ```
 
 ## c)
-```{r, echo = F, eval = T}
+```{r, echo = F, eval = T, out.width = "33%"}
 k_cells <- length(data_cells$y)
 k_redwood <- length(data_redwood$y)
 k_pines <- length(data_pines$y)
@@ -90,8 +96,8 @@ colnames(L_matrix_cells) = paste("x", seq(length(cells_L$x)), sep="")
 dat_cells = as.data.frame(L_matrix_cells)
 dat_cells$trial = rownames(L_matrix_cells)
 mdat_cells = melt(dat_cells, id.vars="trial")
-mdat_cells$x = as.numeric(gsub("x", "", mdat_cells$variable))
-df_cells = data.frame(x = seq(1,100), pred = cells_L$y, lb = pred_interval_cells[5,], ub = pred_interval_cells[95,])
+mdat_cells$x = as.numeric(gsub("x", "", mdat_cells$variable))/100
+df_cells = data.frame(x = seq(0,1,length.out = 100), pred = cells_L$y, lb = pred_interval_cells[5,], ub = pred_interval_cells[95,])
 
 ggplot() +
     theme_bw() +
@@ -99,7 +105,7 @@ ggplot() +
     geom_line(data = mdat_cells, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
     geom_line(data = df_cells, aes(x = x, y = pred), size = 1, col = 'red') + 
     geom_line(data = df_cells, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
-    geom_line(data = df_cells, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed")
+    geom_line(data = df_cells, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Cells")
 
 pred_interval_redwood <- apply(L_matrix_redwood,2,sort)
 rownames(L_matrix_redwood) = paste("trial", seq(100), sep="")
@@ -108,8 +114,8 @@ colnames(L_matrix_redwood) = paste("x", seq(length(redwood_L$x)), sep="")
 dat_redwood = as.data.frame(L_matrix_redwood)
 dat_redwood$trial = rownames(L_matrix_redwood)
 mdat_redwood = melt(dat_redwood, id.vars="trial")
-mdat_redwood$x = as.numeric(gsub("x", "", mdat_redwood$variable))
-df_redwood = data.frame(x = seq(1,100), pred = redwood_L$y, lb = pred_interval_redwood[5,], ub = pred_interval_redwood[95,])
+mdat_redwood$x = as.numeric(gsub("x", "", mdat_redwood$variable))/100
+df_redwood = data.frame(x = seq(0,1,length.out = 100), pred = redwood_L$y, lb = pred_interval_redwood[5,], ub = pred_interval_redwood[95,])
 
 ggplot() +
     theme_bw() +
@@ -117,7 +123,7 @@ ggplot() +
     geom_line(data = mdat_redwood, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
     geom_line(data = df_redwood, aes(x = x, y = pred), size = 1, col = 'red') + 
     geom_line(data = df_redwood, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
-    geom_line(data = df_redwood, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed")
+    geom_line(data = df_redwood, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Redwood")
 
 pred_interval_pines <- apply(L_matrix_pines,2,sort)
 rownames(L_matrix_pines) = paste("trial", seq(100), sep="")
@@ -126,8 +132,8 @@ colnames(L_matrix_pines) = paste("x", seq(length(pines_L$x)), sep="")
 dat_pines = as.data.frame(L_matrix_pines)
 dat_pines$trial = rownames(L_matrix_pines)
 mdat_pines = melt(dat_pines, id.vars="trial")
-mdat_pines$x = as.numeric(gsub("x", "", mdat_pines$variable))
-df_pines = data.frame(x = seq(1,99), pred = pines_L$y, lb = pred_interval_pines[5,], ub = pred_interval_pines[95,])
+mdat_pines$x = as.numeric(gsub("x", "", mdat_pines$variable))*7/100
+df_pines = data.frame(x = seq(0,7,length.out = 99), pred = pines_L$y, lb = pred_interval_pines[5,], ub = pred_interval_pines[95,])
 
 ggplot() +
     theme_bw() +
@@ -135,7 +141,7 @@ ggplot() +
     geom_line(data = mdat_pines, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
     geom_line(data = df_pines, aes(x = x, y = pred), size = 1, col = 'red') + 
     geom_line(data = df_pines, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
-    geom_line(data = df_pines, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed")
+    geom_line(data = df_pines, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Pines")
 ```
 
 
@@ -163,18 +169,18 @@ obsprob$z <- as.numeric(obsprob$z)
 obsprob$z[obsprob$z>=62] = obsprob$z[obsprob$z>=62]+1
 obsprob$z = 0.04 + (obsprob$z-1)*0.01
 
-obsprob = obsprob[order( obsprob[,1], obsprob[,2] ),]
-probabilities = list(x = seq(5,295,10), y = seq(5,295,10), z = t(matrix(obsprob$z, ncol = 30)))
-image.plot(probabilities)
+obsprob = obsprob[order( obsprob[,2], obsprob[,1] ),]
+probabilities = list(x = seq(5,295,10), y = seq(5,295,10), z = matrix(obsprob$z, ncol = 30))
+image.plot(probabilities, main = "Pine tree observation probabilities")
 
 #interpolation <- interp(obsprob$x, obsprob$y, obsprob$z)
 #image.plot(interpolation)
 
 obspines$z = obspines$z - 1
-obspines = obspines[order( obspines[,1], obspines[,2] ),]
-trees = list(x = seq(5,295,10), y = seq(5,295,10), z = t(matrix(obspines$z, ncol = 30)))
+obspines = obspines[order( obspines[,2], obspines[,1] ),]
+trees = list(x = seq(5,295,10), y = seq(5,295,10), z = matrix(obspines$z, ncol = 30))
 
-image.plot(trees)
+image.plot(trees, main = "Observations of pine trees")
 ```
 
 We further assume that the observations given the true number of trees are spatially uncorrelated from one grid unit to another. We then specify the likelihood model for the observations. For each grid unit $i$ one has a binomial likelihood model with $d_i \leq k_i$,
@@ -186,3 +192,151 @@ $$[\mathbf{d}|\mathbf{k}] \sim p(\mathbf{d}|\mathbf{k}) = \prod_{i=1}^n p(d_i|k_
 To further specify our model, we assume apriori that the distribution of trees is according to a stationary Poisson RF with model parameter $\lambda_k$. The prior Poisson model is defined on the discretized event count representation $\mathbf{k}\in \mathbb{N}^n_\oplus$ as follows,
 $$ \mathbf{k} \sim p(\mathbf{k}) = \prod_{i=1}^n p(k_i) = \prod_{i=1}^n \frac{\pi_k^{k_i}}{k_i!}\times \exp\{-\pi_k\} =  \frac{\pi_k^{\sum_{i}k_i}}{\prod_{i}k_i!}\times \exp\{-n\pi_k\},$$
 which is a discretized spatially stationary Poisson count RF with $\{\lambda(\mathbf{x}) = \lambda_k;\mathbf{x}\in D\}$ and $\pi_k = \lambda_k \Delta_n$ and basis-event set $\mathbb{E} = \emptyset$.
+
+## c)
+Now we want to estimate the intensity $\lambda_k$ based on the observations with observation probabilities. To estimate the intensity, we start by estimating the event probability $\pi_k$ in the discretized field represented by the $n$-vector $\mathbf{k}$. Hence, the model parameter for $\mathbf{k}$ is $\theta_{pP} = (\pi_k,\emptyset)$. This is assessed through marginal maximum likelihood estimation,
+$$\hat \theta_{pP} = \underset{\theta_p}{\operatorname{arg max}}\{\log p(\mathbf{d};\theta_p)\}.$$
+By utilizing the joint density of $\mathbf{k}$ and $\mathbf{d}$, and summing each term over $k_i\geq d_i$, we obtain the solution,
+$$\hat \pi_k = \frac{n_d}{\boldsymbol \alpha^T \mathbf{i}_n},$$
+where $n_d$ is the number of event observations and $\boldsymbol \alpha$ is the observation probabilities. Further, we get the estimated intensity $\hat \lambda_k = \hat \pi_k/\Delta_n$.
+
+Having estimated the intensity, we generate 10 realizations from the prior Poisson event-count model and the associated approximate Poisson event-location realizations. The event-locations are then displayed.
+```{r, echo =F, eval = T, out.width = "33%"}
+pi_k = sum(obspines$z)/sum(obsprob$z)
+lambda_k = pi_k/100
+
+n = length(obspines$z)
+k <- rpois(n,pi_k)
+trees2 = list(x = seq(5,295,10), y = seq(5,295,10), z = matrix(k, ncol = 30))
+image.plot(trees2, main = "Realization of prior distribution")
+
+k <- rpois(n,(1-obsprob$z)*pi_k)+obspines$z
+trees3 = list(x = seq(5,295,10), y = seq(5,295,10), z = matrix(k, ncol = 30))
+image.plot(trees3, main = "Realization of posterior distribution")
+image.plot(trees, main = "Observations of pine trees")
+```
+
+```{r, echo = F, eval = T, out.width = "20%"}
+generate_event_locations <- function(pi_k,k_zero){
+  k <- rpois(n,pi_k)+k_zero
+  event_locations <- matrix(NA, ncol = 2, nrow = sum(k))
+  count = 1
+  for (i in 1:900){
+    num = k[i]
+    if (num!=0){
+      x = runif(num,0,10)
+      y = runif(num,0,10)
+      event_locations[(count):(count+num-1),1] = x + ((i-1)%%30)*10
+      event_locations[(count):(count+num-1),2] = y + ((i-1)%/%30)*10
+      }
+    count = count + num
+    }
+  return(event_locations)
+  }
+x = list()
+for (i in 1:10){
+  x[[i]] <- generate_event_locations(pi_k,rep(0,n))
+  colnames(x[[i]]) = c("x","y")
+}
+p1 <- ggplot(as.data.frame(x[[1]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 1")
+p2 <- ggplot(as.data.frame(x[[2]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 2")
+p3 <- ggplot(as.data.frame(x[[3]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 3")
+p4 <- ggplot(as.data.frame(x[[4]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 4")
+p5 <- ggplot(as.data.frame(x[[5]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 5")
+p6 <- ggplot(as.data.frame(x[[6]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 6")
+p7 <- ggplot(as.data.frame(x[[7]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 7")
+p8 <- ggplot(as.data.frame(x[[8]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 8")
+p9 <- ggplot(as.data.frame(x[[9]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 9")
+p10 <- ggplot(as.data.frame(x[[10]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 10")
+p1
+p2
+p3
+p4
+p5
+p6
+p7
+p8
+p9
+p10
+```
+
+## d)
+Having defined the likelihood model and the prior distribution, we now want to develop the expression for the posterior discretized event-count model. To do this, we first write the joint distribution for the spatial variable $\mathbf{k}$ and the observations $\mathbf{d}$,
+\begin{align*}
+\begin{bmatrix} \mathbf{k}\\ \mathbf{d} \end{bmatrix} \sim p(\mathbf{k},\mathbf{d}) &= p(\mathbf{d}|\mathbf{k})p(\mathbf{k}) = \prod_{i=1}^n p(k_i|d_i)\prod_{i=1}^n p(k_i) = \prod_{i=1}^n p(d_i,k_i)\\
+&= \prod_{i=1}^n \begin{pmatrix} k_i\\ d_i \end{pmatrix} \alpha_i^{d_i}[1-\alpha_i]^{k_i-d_i}\times \frac{\pi_k^{k_i}}{k_i!} \exp\{-\pi_k\}\\
+&= \prod_{i=1}^n \frac{[\alpha_i\pi_k]^{d_i}}{d_i!}\times \frac{[(1-\alpha_i)\pi_k]^{k_i-d_i}}{(k_i-d_i)!} \times \exp\{-\pi_k\}. 
+\end{align*}
+Having arrived at the joint distribution, we note that it is on factorial form, which implies independence of each grid node. Hence, the normalizing constant can be found by summing for each node over $k_i\geq d_i$ to obtain $p(d_i)$. This means that the posterior distribution can be written as,
+\begin{align*}
+[\mathbf{k}|\mathbf{d}] \sim p(\mathbf{k}|\mathbf{d}) &= \prod_{i=1}^n [p(d_i)]^{-1}\times p(d_i,k_i) = \prod_{i=1}^n p(k_i|d_i)\\
+&= \prod_{i=1}^n \frac{[(1-\alpha_i)\pi_k]^{k_i-d_i}}{(k_i-d_i)!} \times \exp\{-(1-\alpha_i)\pi_k\},
+\end{align*}
+for $\mathbf{k}\in \mathbb{N}_\oplus^n;\mathbf{k}\geq\mathbf{d}$. This is a discretized Poisson count random field with model parameters $\mathbf{\pi}_n = \Big((1-\alpha_1)\pi_k, (1-\alpha_2)\pi_k,\dots,(1-\alpha_n)\pi_k\Big)$ and base event set $\mathbf{k}_n^0 = (d_1,\dots,d_n)$.
+
+To simulatefrom the associated approximate event-location model, we use Algorithm 7 from [@Omre].
+```{r, echo = F, eval = T, out.width = "20%"}
+x = list()
+for (i in 1:10){
+  x[[i]] <- generate_event_locations((1-obsprob$z)*pi_k, obspines$z)
+  colnames(x[[i]]) = c("x","y")
+}
+
+p1 <- ggplot(as.data.frame(x[[1]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 1")
+p2 <- ggplot(as.data.frame(x[[2]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 2")
+p3 <- ggplot(as.data.frame(x[[3]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 3")
+p4 <- ggplot(as.data.frame(x[[4]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 4")
+p5 <- ggplot(as.data.frame(x[[5]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 5")
+p6 <- ggplot(as.data.frame(x[[6]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 6")
+p7 <- ggplot(as.data.frame(x[[7]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 7")
+p8 <- ggplot(as.data.frame(x[[8]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 8")
+p9 <- ggplot(as.data.frame(x[[9]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 9")
+p10 <- ggplot(as.data.frame(x[[10]]), aes(x, y)) + geom_point()+  theme(legend.position = "none",axis.title.x=element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(), plot.title = element_text(size=22))  +
+    ggtitle("Realization 10")
+p1
+p2
+p3
+p4
+p5
+p6
+p7
+p8
+p9
+p10
+```
+
+
+# References
