@@ -339,4 +339,8 @@ p10
 ```
 
 
-# References
+## Problem 3: Clustered event spatial variables
+
+The Neyman-Scott cluster model for event spatial variables is 
+
+$$N(x) \sim Poisson(\lambda(x)) \\$$
