@@ -186,3 +186,12 @@ $$[\mathbf{d}|\mathbf{k}] \sim p(\mathbf{d}|\mathbf{k}) = \prod_{i=1}^n p(d_i|k_
 To further specify our model, we assume apriori that the distribution of trees is according to a stationary Poisson RF with model parameter $\lambda_k$. The prior Poisson model is defined on the discretized event count representation $\mathbf{k}\in \mathbb{N}^n_\oplus$ as follows,
 $$ \mathbf{k} \sim p(\mathbf{k}) = \prod_{i=1}^n p(k_i) = \prod_{i=1}^n \frac{\pi_k^{k_i}}{k_i!}\times \exp\{-\pi_k\} =  \frac{\pi_k^{\sum_{i}k_i}}{\prod_{i}k_i!}\times \exp\{-n\pi_k\},$$
 which is a discretized spatially stationary Poisson count RF with $\{\lambda(\mathbf{x}) = \lambda_k;\mathbf{x}\in D\}$ and $\pi_k = \lambda_k \Delta_n$ and basis-event set $\mathbb{E} = \emptyset$.
+
+
+## Problem 3: Clustered event spatial variables
+
+The Neyman-Scott cluster model for event spatial variables is 
+
+$$N(x) \sim Poisson(\lambda(x)) \\$$
+
+
