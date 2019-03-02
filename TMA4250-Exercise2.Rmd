@@ -55,7 +55,7 @@ plot(data_pines, main = "Data from pines.dat file",xlab = "x", ylab = "y")
 ```
 
 ## b)
-We then want to compute the empirical $L$-function for each of the point patterns, and uses the R function `Kfn()` to do this. 
+We then want to compute the empirical $L$-function for each of the point patterns, and use the R function `Kfn()` to do this. The $L$-functions are then displayed for each point pattern.
 
 ```{r, echo = F, eval = T, out.width = "33%"}
 cells_L <- Kfn(data_cells,1)
@@ -64,13 +64,13 @@ redwood_L <- Kfn(data_redwood, 1)
 #redwood_L$y <- redwood_L$y/redwood_L$x
 pines_L <- Kfn(data_pines,7)
 #pines_L$y <- pines_L$y/pines_L$x
-plot(cells_L, type="s", xlab="distance", ylab="L(t)")
-lines(seq(0,1,length.out=100),seq(0,1,length.out =100))
-plot(redwood_L, type="s", xlab="distance", ylab="L(t)")
-lines(seq(0,1,length.out=100),seq(0,1,length.out=100))
-plot(pines_L, type="s", xlab="distance", ylab="L(t)")
-lines(seq(0,7,length.out=100),seq(0,7,length.out=100))
+plot(cells_L, type="s", xlab="distance", ylab="L(t)", main = "L-function for cells data")
+
+plot(redwood_L, type="s", xlab="distance", ylab="L(t)", main = "L-function for redwood data")
+
+plot(pines_L, type="s", xlab="distance", ylab="L(t)", main = "L-function for pines data")
 ```
+The plots of the $L$-functions are closely related to the displayed point patterns. The cells data has a low value of the $L$-function for low values of $t$. This means that there is a low probability of points being close to each other, we have a repulsive model, which is verified on the displayed point pattern. The redwood data on the other hand, has a high value of the $L$-function for low values of $t$. This means that there is a large probability of points being close, we have a clustered model, which also is verified on the displayed point pattern. Finally we have the pines data, for which the $L$-function closely resembles a straight line. This means that the point pattern 
 
 ## c)
 ```{r, echo = F, eval = T, out.width = "33%"}
