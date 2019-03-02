@@ -21,6 +21,7 @@ references:
 
 
 ```{r setup, include = FALSE}
+library(bookdown)
 library(formatR)
 showsol <- FALSE
 library(knitr)
