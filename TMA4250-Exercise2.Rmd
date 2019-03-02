@@ -344,3 +344,4 @@ p10
 The Neyman-Scott cluster model for event spatial variables is 
 
 $$N(x) \sim Poisson(\lambda(x)) \\$$
+# References
