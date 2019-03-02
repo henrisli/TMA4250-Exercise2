@@ -71,7 +71,29 @@ plot(redwood_L, type="s", xlab="distance", ylab="L(t)", main = "L-function for r
 
 plot(pines_L, type="s", xlab="distance", ylab="L(t)", main = "L-function for pines data")
 ```
-The plots of the $L$-functions are closely related to the displayed point patterns. The cells data has a low value of the $L$-function for low values of $t$. This means that there is a low probability of points being close to each other, we have a repulsive model, which is verified on the displayed point pattern. The redwood data on the other hand, has a high value of the $L$-function for low values of $t$. This means that there is a large probability of points being close, we have a clustered model, which also is verified on the displayed point pattern. Finally we have the pines data, for which the $L$-function closely resembles a straight line. This means that the point pattern 
+The plots of the $L$-functions are closely related to the displayed point patterns. The cells data has a low value of the $L$-function for low values of $t$. This means that there is a low probability of points being close to each other, we have a repulsive model, which is verified on the displayed point pattern. The redwood data on the other hand, has a high value of the $L$-function for low values of $t$. This means that there is a large probability of points being close, we have a clustered model, which also is verified on the displayed point pattern. Finally we have the pines data, for which the $L$-function closely resembles a straight line. This means that the point pattern is similar to a stationary Poisson RF.
+
+The interaction function $J(t)$ is defined as,
+$$J(t) = \frac{\mathbf{E}[k_{\mathbf{B}_\mathbf{x_0}(t)}-1]}{|\mathbf{B}_{\mathbf{x_0}}\cap D|}; t\in \mathbb{R}_\oplus,$$
+where $\mathbf{B}_{\mathbf{x_0}}(t)$ is defined as the ball with radius $t$ and center $\mathbf{x_0}\in \mathbb{X}_D$. For a stationary Poisson random field, one gets,
+$$J(t) = \frac{\lambda_k |\mathbf{B}_{\mathbf{x_0}}\cap D|}{|\mathbf{B}_{\mathbf{x_0}}\cap D|} = \lambda_k.$$
+Hence, for stationary Poisson RF, the interaction-function is independent of the distance $t$.
+
+An alternative interaction function is the dimension dependent $L$-function, which in $\mathbb{R}^2$ is,
+$$L_2(t) = \bigg[\frac{\mathbf{E}[k_{\mathbf{B}_\mathbf{x_0}(t)}-1]}{\lambda_k\pi}  \bigg]^{1/2} = J(t) \times \frac{t}{\lambda_k}.$$
+For the stationary Poisson random field, we get $L_2(t) = t$.
+
+We then display the empirical $L$-function for each point pattern with the theoretical funtion for a stationary Poisson RF.
+
+```{r, echo = F, eval = T, out.width = "33%"}
+df_cells = data.frame(x = cells_L$x, y = cells_L$y)
+df_redwood = data.frame(x = redwood_L$x, y = redwood_L$y)
+df_pines = data.frame(x = pines_L$x, y = pines_L$y)
+
+ggplot() + geom_line(data = df_cells, aes(x = x, y = y, colour = "Empirical")) + geom_line(aes(x = seq(0,1,length.out = 100), y = seq(0,1,length.out = 100),colour="Theoretical")) + ylab("L(t)") + xlab("t") + ggtitle("Comparison of empirical and stationary theoretical L-function")+ theme(plot.title = element_text(size=12))
+ggplot() + geom_line(data = df_redwood, aes(x = x, y = y, colour = "Empirical")) + geom_line(aes(x = seq(0,1,length.out = 100), y = seq(0,1,length.out = 100),colour="Theoretical")) + ylab("L(t)") + xlab("t") + ggtitle("Comparison of empirical and stationary theoretical L-function")+ theme(plot.title = element_text(size=12))
+ggplot() + geom_line(data = df_pines, aes(x = x, y = y, col = "Empirical")) + geom_line(aes(x = seq(0,7,length.out = 100), y = seq(0,7,length.out = 100),colour="Theoretical")) + ylab("L(t)") + xlab("t") + ggtitle("Comparison of empirical and stationary theoretical L-function")+ theme(plot.title = element_text(size=12))
+```
 
 ## c)
 ```{r, echo = F, eval = T, out.width = "33%"}
