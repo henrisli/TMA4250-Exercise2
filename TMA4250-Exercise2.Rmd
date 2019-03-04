@@ -55,6 +55,8 @@ plot(data_redwood, main = "Data from redwood.dat file",xlab = "x", ylab = "y")
 plot(data_pines, main = "Data from pines.dat file",xlab = "x", ylab = "y")
 ```
 
+The cell data in the left plot represents some cell structure. Here, the cells have a repulsive effect on each other, so two cells are not likely to be close to each other. Thus, we get a point pattern that looks to be repulsive. The middle plot represents locations of redwood trees. The trees release seeds, which fall to the ground close to them, so trees get clustered together around a "mother tree". We therefore get a point pattern that contains clusters of points. Finally, the plot to the right is locations of pine trees. Presumably, seeds from these trees can get carried further away from the tree trunk by e.g. animals eating the pinecones. Hence, the location of one tree is independent of locations of other trees, and we get a pattern that looks like a stationary Poisson random field.
+
 ## b)
 We then want to compute the empirical $L$-function for each of the point patterns, and use the R function `Kfn()` to do this. The $L$-functions are then displayed for each point pattern.
 
@@ -314,7 +316,7 @@ Having arrived at the joint distribution, we note that it is on factorial form, 
 \end{align*}
 for $\mathbf{k}\in \mathbb{N}_\oplus^n;\mathbf{k}\geq\mathbf{d}$. This is a discretized Poisson count random field with model parameters $\mathbf{\pi}_n = \Big((1-\alpha_1)\pi_k, (1-\alpha_2)\pi_k,\dots,(1-\alpha_n)\pi_k\Big)$ and base event set $\mathbf{k}_n^0 = (d_1,\dots,d_n)$.
 
-To simulatefrom the associated approximate event-location model, we use Algorithm 7 from [@Omre].
+To simulate from the associated approximate event-location model, we use Algorithm 7 from [@Omre].
 ```{r, echo = F, eval = T, out.width = "20%"}
 x = list()
 for (i in 1:10){
@@ -367,4 +369,5 @@ p10
 The Neyman-Scott cluster model for event spatial variables is 
 
 $$N(x) \sim Poisson(\lambda(x)) \\$$
+
 # References
