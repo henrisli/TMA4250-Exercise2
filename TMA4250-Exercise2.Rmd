@@ -47,7 +47,6 @@ We consider the three real data point patterns found in the R package `MASS`.
 library(MASS)
 data_cells <- ppinit("cells.dat")
 data_redwood <- ppinit("redwood.dat")
-data_redwood$y <- -data_redwood$y
 data_pines <- ppinit("pines.dat")
 
 plot(data_cells, main = "Data from cells.dat file", xlab = "x", ylab = "y")
@@ -61,17 +60,20 @@ The cell data in the left plot represents some cell structure. Here, the cells h
 We then want to compute the empirical $L$-function for each of the point patterns, and use the R function `Kfn()` to do this. The $L$-functions are then displayed for each point pattern.
 
 ```{r, echo = F, eval = T, out.width = "33%"}
-cells_L <- Kfn(data_cells,1)
-#cells_L$y <- cells_L$y/cells_L$x
-redwood_L <- Kfn(data_redwood, 1)
-#redwood_L$y <- redwood_L$y/redwood_L$x
+ppinit("cells.dat")
+cells_L <- Kfn(data_cells,0.7)
+
+ppinit("redwood.dat")
+redwood_L <- Kfn(data_redwood, 0.7)
+
+ppinit("pines.dat")
 pines_L <- Kfn(data_pines,7)
-#pines_L$y <- pines_L$y/pines_L$x
-plot(cells_L, type="s", xlab="distance", ylab="L(t)", main = "L-function for cells data")
 
-plot(redwood_L, type="s", xlab="distance", ylab="L(t)", main = "L-function for redwood data")
+plot(cells_L, type="p", xlab="distance", ylab="L(t)", main = "L-function for cells data")
 
-plot(pines_L, type="s", xlab="distance", ylab="L(t)", main = "L-function for pines data")
+plot(redwood_L, type="p", xlab="distance", ylab="L(t)", main = "L-function for redwood data")
+
+plot(pines_L, type="p", xlab="distance", ylab="L(t)", main = "L-function for pines data")
 ```
 The plots of the $L$-functions are closely related to the displayed point patterns. The cells data has a low value of the $L$-function for low values of $t$. This means that there is a low probability of points being close to each other, we have a repulsive model, which is verified on the displayed point pattern. The redwood data on the other hand, has a high value of the $L$-function for low values of $t$. This means that there is a large probability of points being close, we have a clustered model, which also is verified on the displayed point pattern. Finally we have the pines data, for which the $L$-function closely resembles a straight line. This means that the point pattern is similar to a stationary Poisson RF.
 
@@ -92,10 +94,11 @@ df_cells = data.frame(x = cells_L$x, y = cells_L$y)
 df_redwood = data.frame(x = redwood_L$x, y = redwood_L$y)
 df_pines = data.frame(x = pines_L$x, y = pines_L$y)
 
-ggplot() + geom_line(data = df_cells, aes(x = x, y = y, colour = "Empirical")) + geom_line(aes(x = seq(0,1,length.out = 100), y = seq(0,1,length.out = 100),colour="Theoretical")) + ylab("L(t)") + xlab("t") + ggtitle("Comparison of empirical and stationary theoretical L-function")+ theme(plot.title = element_text(size=12))
-ggplot() + geom_line(data = df_redwood, aes(x = x, y = y, colour = "Empirical")) + geom_line(aes(x = seq(0,1,length.out = 100), y = seq(0,1,length.out = 100),colour="Theoretical")) + ylab("L(t)") + xlab("t") + ggtitle("Comparison of empirical and stationary theoretical L-function")+ theme(plot.title = element_text(size=12))
-ggplot() + geom_line(data = df_pines, aes(x = x, y = y, col = "Empirical")) + geom_line(aes(x = seq(0,7,length.out = 100), y = seq(0,7,length.out = 100),colour="Theoretical")) + ylab("L(t)") + xlab("t") + ggtitle("Comparison of empirical and stationary theoretical L-function")+ theme(plot.title = element_text(size=12))
+ggplot() + geom_point(data = df_cells, aes(x = x, y = y, colour = "Empirical")) + geom_line(aes(x = seq(0,0.7,length.out = 100), y = seq(0,0.7,length.out = 100),colour="Theoretical")) + ylab("L(t)") + xlab("t") + ggtitle("Comparison of empirical and stationary theoretical L-function for Cells data")+ theme(plot.title = element_text(size=10))
+ggplot() + geom_point(data = df_redwood, aes(x = x, y = y, colour = "Empirical")) + geom_line(aes(x = seq(0,0.7,length.out = 100), y = seq(0,0.7,length.out = 100),colour="Theoretical")) + ylab("L(t)") + xlab("t") + ggtitle("Comparison of empirical and stationary theoretical L-function for Redwood data")+ theme(plot.title = element_text(size=10))
+ggplot() + geom_point(data = df_pines, aes(x = x, y = y, col = "Empirical")) + geom_line(aes(x = seq(0,7,length.out = 100), y = seq(0,7,length.out = 100),colour="Theoretical")) + ylab("L(t)") + xlab("t") + ggtitle("Comparison of empirical and stationary theoretical L-function for Pines data")+ theme(plot.title = element_text(size=10))
 ```
+From the plots, we see that the empirical $L$-function for the Pines data is closest to the theoretical $L$-function of a stationary Poisson RF. The empirical $L$-function of the Redwood and Cells data have large deviations for small values of $t$, with Cells data having a smaller value, and Redwood data having a larger value than the theoretical stationary $L$-function. From the $L$-function and point pattern plots, we hypothesize that a stationary Poisson RF appear as a suitable model for the Pines data, but not for the two others.
 
 ## c)
 ```{r, echo = F, eval = T, out.width = "33%"}
@@ -106,11 +109,18 @@ L_matrix_cells <- matrix(NA, nrow = 100, ncol = length(cells_L$x))
 L_matrix_redwood <- matrix(NA, nrow = 100, ncol = length(redwood_L$x))
 L_matrix_pines <- matrix(NA, nrow = 100, ncol = length(pines_L$x))
 for (i in 1:100){
+  
   df_cells = data.frame(x = runif(k_cells,0,1), y = runif(k_cells,0,1))
-  df_redwood = data.frame(x = runif(k_redwood,0,1), y = runif(k_redwood,0,1))
-  df_pines = data.frame(x = runif(k_pines,0,9), y = runif(k_pines,0,9))
-  L_matrix_cells[i,] = Kfn(df_cells,1)$y
-  L_matrix_redwood[i,] = Kfn(df_redwood,1)$y
+  df_redwood = data.frame(x = runif(k_redwood,0,1), y = runif(k_redwood,-1,0))
+  df_pines = data.frame(x = runif(k_pines,0,9.6), y = runif(k_pines,0,10))
+  
+  ppinit("cells.dat")
+  L_matrix_cells[i,] = Kfn(df_cells,0.7)$y
+  
+  ppinit("redwood.dat")
+  L_matrix_redwood[i,] = Kfn(df_redwood,0.7)$y
+  
+  ppinit("pines.dat")
   L_matrix_pines[i,] = Kfn(df_pines,7)$y
 }
 
@@ -130,7 +140,7 @@ ggplot() +
     geom_line(data = mdat_cells, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
     geom_line(data = df_cells, aes(x = x, y = pred), size = 1, col = 'red') + 
     geom_line(data = df_cells, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
-    geom_line(data = df_cells, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Cells")
+    geom_line(data = df_cells, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Empirical Monte Carlo test of stationarity for Cells data")
 
 pred_interval_redwood <- apply(L_matrix_redwood,2,sort)
 rownames(L_matrix_redwood) = paste("trial", seq(100), sep="")
@@ -148,7 +158,7 @@ ggplot() +
     geom_line(data = mdat_redwood, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
     geom_line(data = df_redwood, aes(x = x, y = pred), size = 1, col = 'red') + 
     geom_line(data = df_redwood, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
-    geom_line(data = df_redwood, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Redwood")
+    geom_line(data = df_redwood, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Empirical Monte Carlo test of stationarity for Redwood data")
 
 pred_interval_pines <- apply(L_matrix_pines,2,sort)
 rownames(L_matrix_pines) = paste("trial", seq(100), sep="")
@@ -166,7 +176,7 @@ ggplot() +
     geom_line(data = mdat_pines, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
     geom_line(data = df_pines, aes(x = x, y = pred), size = 1, col = 'red') + 
     geom_line(data = df_pines, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
-    geom_line(data = df_pines, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Pines")
+    geom_line(data = df_pines, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Empirical Monte Carlo test of stationarity for Pines data")
 ```
 
 
