@@ -101,6 +101,8 @@ ggplot() + geom_point(data = df_pines, aes(x = x, y = y, col = "Empirical")) + g
 From the plots, we see that the empirical $L$-function for the Pines data is closest to the theoretical $L$-function of a stationary Poisson RF. The empirical $L$-function of the Redwood and Cells data have large deviations for small values of $t$, with Cells data having a smaller value, and Redwood data having a larger value than the theoretical stationary $L$-function. From the $L$-function and point pattern plots, we hypothesize that a stationary Poisson RF appear as a suitable model for the Pines data, but not for the two others.
 
 ## c)
+Finally, we perform an empirical Monte Carlo test to check whether the stationary Poisson RF is a sutable model. We consider each point pattern - under the hypothesis that the point pattern origins from a stationary Poisson random field, condition on the observed point count, and generate 100 realizations of a stationary Poisson RF. For each realization we compute the $L$-function and use the 100 generated $L$-functions to empirically test whether the observed point pattern could origin from a stationary Poisson RF. To do this, we display empirical 0.9-intervals for the $L$-functions together with the estimated function for each point pattern.
+
 ```{r, echo = F, eval = T, out.width = "33%"}
 k_cells <- length(data_cells$y)
 k_redwood <- length(data_redwood$y)
@@ -178,6 +180,7 @@ ggplot() +
     geom_line(data = df_pines, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
     geom_line(data = df_pines, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Empirical Monte Carlo test of stationarity for Pines data")
 ```
+From the plots, we see that none of the point patterns are inside the 0.9-intervals for all values of $t$. Still, the Pines data is the one that is closest to the 0.9-interval. From both the plots of the point patterns and this test, we conclude that the first two (Cells and Redwood) are definitely not from a stationary Poisson RF, while the last (Pines) point pattern could come from a stationary Poisson RF, even though the $L$-function is outside the 0.9-interval for some $t$.
 
 
 
@@ -236,22 +239,13 @@ $$\hat \pi_k = \frac{n_d}{\boldsymbol \alpha^T \mathbf{i}_n},$$
 where $n_d$ is the number of event observations and $\boldsymbol \alpha$ is the observation probabilities. Further, we get the estimated intensity $\hat \lambda_k = \hat \pi_k/\Delta_n$.
 
 Having estimated the intensity, we generate 10 realizations from the prior Poisson event-count model and the associated approximate Poisson event-location realizations. The event-locations are then displayed.
-```{r, echo =F, eval = T, out.width = "33%"}
+
+```{r, echo = F, eval = T, out.width = "20%"}
 pi_k = sum(obspines$z)/sum(obsprob$z)
 lambda_k = pi_k/100
 
 n = length(obspines$z)
-k <- rpois(n,pi_k)
-trees2 = list(x = seq(5,295,10), y = seq(5,295,10), z = matrix(k, ncol = 30))
-image.plot(trees2, main = "Realization of prior distribution")
 
-k <- rpois(n,(1-obsprob$z)*pi_k)+obspines$z
-trees3 = list(x = seq(5,295,10), y = seq(5,295,10), z = matrix(k, ncol = 30))
-image.plot(trees3, main = "Realization of posterior distribution")
-image.plot(trees, main = "Observations of pine trees")
-```
-
-```{r, echo = F, eval = T, out.width = "20%"}
 generate_event_locations <- function(pi_k,k_zero){
   k <- rpois(n,pi_k)+k_zero
   event_locations <- matrix(NA, ncol = 2, nrow = sum(k))
@@ -326,7 +320,7 @@ Having arrived at the joint distribution, we note that it is on factorial form, 
 \end{align*}
 for $\mathbf{k}\in \mathbb{N}_\oplus^n;\mathbf{k}\geq\mathbf{d}$. This is a discretized Poisson count random field with model parameters $\mathbf{\pi}_n = \Big((1-\alpha_1)\pi_k, (1-\alpha_2)\pi_k,\dots,(1-\alpha_n)\pi_k\Big)$ and base event set $\mathbf{k}_n^0 = (d_1,\dots,d_n)$.
 
-To simulate from the associated approximate event-location model, we use Algorithm 7 from [@Omre].
+To simulate from the associated approximate event-location model, we use Algorithm 7 from [@Omre]. Then we display 10 generated realizations from the posterior approximate event-location model.
 ```{r, echo = F, eval = T, out.width = "20%"}
 x = list()
 for (i in 1:10){
@@ -372,7 +366,21 @@ p8
 p9
 p10
 ```
+If we compare the posterior approximate event-locations with the prior approximate event-locations, we see no clear difference. The posterior and prior realization look very similar. Still, in the posterior realizations we know that the observed points are present, so it will to some extent be different from the prior realizations, but this is hard to observe.
 
+Finally we display three event-count plots. One for the prior model, one for the posterior and one for the observed points.
+```{r, echo =F, eval = T, out.width = "33%"}
+set.seed(4250)
+k <- rpois(n,pi_k)
+trees2 = list(x = seq(5,295,10), y = seq(5,295,10), z = matrix(k, ncol = 30))
+image.plot(trees2, main = "Realization of prior distribution")
+
+k <- rpois(n,(1-obsprob$z)*pi_k)+obspines$z
+trees3 = list(x = seq(5,295,10), y = seq(5,295,10), z = matrix(k, ncol = 30))
+image.plot(trees3, main = "Realization of posterior distribution")
+image.plot(trees, main = "Observations of pine trees")
+```
+Here, the differences between the prior and posterior model are more visible. We see clearly that all counts in the observations are present in the posterior model, but not in the prior model, which stems from the fact that the posterior model has the observations as base set $\mathbb{E}$. Even though we see more clear differences in the event-count plots, they are still fairly similar in variablity and overall appearance. 
 
 ## Problem 3: Clustered event spatial variables
 
