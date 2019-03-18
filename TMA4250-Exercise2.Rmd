@@ -2,21 +2,21 @@
 title: "TMA4250 Spatial Statistics Exercise 1, Spring 2019"
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
 output:
-  pdf_document: default
-  bookdown::html_document2: default
   html_document:
     df_print: paged
+  bookdown::html_document2: default
+  pdf_document: default
 subtitle: 'Group members: Henrik Syversveen Lie, Øyvind Auestad'
-references:
-- id: Omre
-  title: Bayesian Spatial Inversion with Conjugate Prior Models
-  author:
-  - family: Omre
-    given: Henning
-  type: article-journal
-  issued:
-    year: 2019
-    month: 1
+#references:
+#- id: Omre
+#  title: Bayesian Spatial Inversion with Conjugate Prior Models
+#  author:
+#  - family: Omre
+#    given: Henning
+#  type: article-journal
+#  issued:
+#    year: 2019
+#    month: 1
 ---
 
 
@@ -384,8 +384,245 @@ Here, the differences between the prior and posterior model are more visible. We
 
 ## Problem 3: Clustered event spatial variables
 
-The Neyman-Scott cluster model for event spatial variables is 
+The Neyman-Scott cluster model (mother-chid model) for event spatial variables is given below. The mother model is usually a stationary Possion RF with intensity $\lambda_M$. Centered at every mother location, $\boldsymbol{x}^M_j$, a set of child events are independently located, with event count given by the pdf $p(k^c)$ and intensity pdf $p(\boldsymbol{x}|\boldsymbol{x}^M_j)$. Censoring is done in order to make sure that the child-event is in D. The model can be expressed in terms of the event locations as $\mathbb{X}^{NS}_D = (\boldsymbol{x}_1, \boldsymbol{x}_2, \dots, \boldsymbol{x}_{k_D})$. The locations can also be expressed $\boldsymbol{x}_{ji}$ with $j = 1, \dots, k_D^M$, and $i = 1, \dots, k_{D_j}^c$ where $k_D = \sum_j k^c_{D_j}$, i. e. the i'th child of mother j. We then obtain 
 
-$$N(x) \sim Poisson(\lambda(x)) \\$$
+$$
+\mathbb{X}_D^{NS} \sim p(\boldsymbol{x}) = \Pi_{j = 1}^{k^M_D} \bigg[ \Pi_{i = 1}^{k^c_{D_j}} \frac{I(\boldsymbol{x}_{ji} \in D) p (\boldsymbol{x}_{ji}|\boldsymbol{x}^M_j)} {P(D | \boldsymbol{x}^M_j)} \bigg] \times p(k^c_{D_j} | k^c_j, \boldsymbol{x}^M_j) p(k^c_j) \times \frac{1}{|D|^{k^M_D}}p(k^M_D) \\
+= \Pi_{j = 1}^{k^M_D} \bigg[ \Pi_{i = 1}^{k^c_{D_j}} \frac{I(\boldsymbol{x}_{ji} \in D) \phi_3(\boldsymbol{x}_{ji}; \boldsymbol{x}^M_j, \sigma^2_c I_3) } {\Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3)} \bigg] \times {k^c_l \choose k^c_{D_j}} \Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3) \Big( 1 - \Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3) \Big)^{k^c_j - k^c_{D_j}} p(k^c_j) 
+\\ \times \frac{{\lambda_M}^{k^M_D}}{k^M_D!} \exp(-\lambda_M |D|)
+$$
+SE IGJENNOM OG GJØR KONSISTENT MED MATHBF ETC.
+
+Where $k^j_{D_j} \leq k^c_j}$ The latter equality corresponds to the case of a mother-child model with a stationary Poission RF as mother model, having intensity $\lambda_M$, and a Gaussian intensity child-model with spread $\sigma^2_c$ where the child set size is given by $p(k^c_j)$. The parameters of this model is $\boldsymbol{\theta}_{pNS} = (\lambda_M, \sigma^2_c, p(.))$. EXPLAIN WHAT IS WHAT
+
+This model is not analytically tractable, but we can sample from it using the following algorithm
+```{r, echo = T, eval = T, out.width = "33%"}
+set.seed(4250)
+
+simulate_neuman_scott = function(lambda_m, lambda_c, sigma_c) {
+  # simulate one neuman scott process over (0, 1) x (-1, 0)
+  
+  result = matrix(NA, nrow = 0, ncol = 2)
+  # total number of events 
+  k = 0
+  # nuber of mothers
+  k_m = rpois(1, lambda_m)
+  # iterate through the mothers 
+  for (j in 1:k_m) {
+    # sample uniformly from (0, 1) x (-1, 0) to get mother location
+    x_m = c(runif(1, 0, 1), runif(1, -1, 0))
+    # sample to get child count 
+    k_c = rpois(1, lambda_c)
+    # place the children with mother as center 
+    for (i in 1:k_c) {
+      x_c = mvrnorm(mu = x_m, Sigma = sigma_c * diag(2))
+      # check if inside D
+      if (x_c[1] > 0 && x_c[1] < 1 && x_c[2] > -1 && x_c[2] < 0) {
+        result = rbind(result, x_c)
+        k = k + 1
+      }
+    }
+  }
+  
+  # returns a matrix where the rows are the observations
+  return(result)
+}
+
+```
+This algorithm does however suffer from boudary bias, as we do not get any child contributions from potential mothers outside the domain $D$. 
+
+To get an empirical estimate of the model parameters, we study the redwood tree dataset. There seems to be approximatly $8$ clusters, and a total of $62$ observations. Hence a mother intensity of $8$ and a child intensity of $7.8$ might be fitting. The spread in the clusters corresponds to a $\sigma^2_c$ of approximatly $1.5 \cdot 10^{-3}$, which we have obtained by trial and error. Below the redwood tree data is compared with one realization of this model. 
+```{r, echo = F, eval = T, out.width = "33%"}
+set.seed(4250)
+
+# display the redwood data
+redwood_df = data.frame(x = data_redwood$x, y = data_redwood$y)
+
+p = ggplot(data = redwood_df, aes(x=x, y=y)) + 
+  geom_point() + 
+  ggtitle("Redwood data") +
+  theme(plot.title = element_text(hjust = 0.5))
+print(p)
+
+# display the simulated data
+sim_mat = simulate_neuman_scott(8, 7.8, 1.5e-3)
+
+sim_df = data.frame(x = sim_mat[,1], y = sim_mat[,2])
+
+p = ggplot(data = sim_df, aes(x=x, y=y)) + 
+  geom_point() + 
+  ggtitle("Neuman-Scott realization") +
+  theme(plot.title = element_text(hjust = 0.5))
+print(p)
+```
+
+We now want to justify our choice of parameters using an MCMC test on the $L$-function. We have done this below.
+```{r, echo = F, eval = T, out.width = "33%"}
+
+k_redwood <- length(data_redwood$y)
+L_matrix_redwood <- matrix(NA, nrow = 100, ncol = length(redwood_L$x))
+
+for (i in 1:100){
+  
+  # simulate with our parameters
+  sim_mat = simulate_neuman_scott(8, 7.8, 1.5e-3)
+  df_redwood = data.frame(x = sim_mat[,1], y = sim_mat[,2])
+  
+  ppinit("redwood.dat")
+  ppregion(xl = 0, xu = 1, yl = -1, yu = 0)
+  
+  L_matrix_redwood[i,] = Kfn(df_redwood, fs = 0.7)$y
+}
+
+pred_interval_redwood <- apply(L_matrix_redwood,2,sort)
+rownames(L_matrix_redwood) = paste("trial", seq(100), sep="")
+colnames(L_matrix_redwood) = paste("x", seq(length(redwood_L$x)), sep="")
+
+dat_redwood = as.data.frame(L_matrix_redwood)
+dat_redwood$trial = rownames(L_matrix_redwood)
+mdat_redwood = melt(dat_redwood, id.vars="trial")
+mdat_redwood$x = as.numeric(gsub("x", "", mdat_redwood$variable))/100
+df_redwood = data.frame(x = seq(0,1,length.out = 100), pred = redwood_L$y, lb = pred_interval_redwood[5,], ub = pred_interval_redwood[95,])
+
+ggplot() +
+    theme_bw() +
+    theme(panel.grid=element_blank()) +
+    geom_line(data = mdat_redwood, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
+    geom_line(data = df_redwood, aes(x = x, y = pred), size = 1, col = 'red') + 
+    geom_line(data = df_redwood, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
+    geom_line(data = df_redwood, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Empirical Monte Carlo test for our choice of model parameters")
+```
+
+
+## Problem 4: Repulsive event spatial variables 
+
+The Strauss repulsion model for event spatial variables conditioned on the event count $k_D$ is given below. The event locations $\mathbb{X}^S_D$ given the event count is distributed as follows
+$$
+\mathbb{X}^S_D | (k_D = k) \sim p(\boldsymbol{x} | k_D = k) \propto \Pi_{i, j \in \{1, \dots, k\}} \exp(-\phi(\boldsymbol{\tau}_{ij}))
+$$
+with $\boldsymbol{\tau}_{ij} := \boldsymbol{x}_i - \boldsymbol{x}_j$ and where $\phi : \mathbb{R}^n \to \mathbb{R}$ is decreasing with increasing $\| \boldsymbol{\tau}_{ij} \|$. $\phi(.)$ is possibly anisotropic (BETYR DETTE AT DET ER ULIKE BIDRAG FOR FORKJELL I KOMPONENTENE?). A typical form of $\phi(.)$ is 
+$$
+\phi(\boldsymbol{\tau}) = 
+\begin{cases}
+  \phi_0, \ &\| \boldsymbol{\tau} \| \in [0, \tau_0] \\
+  \phi_0 \exp(-\phi_1 (\| \boldsymbol{\tau} \| - \tau_0)), \ &\| \boldsymbol{\tau} \| > \tau_0
+\end{cases}
+$$
+with model parameters $\boldsymbol{\theta}_{pS|k} = (\tau_0, \phi_0, \phi_1)$ all non-negative. WHAT IS WHAT p. 128. 
+
+This Strauss event RF model is not analytically tractable, but we can simulate from it using the algorithm below
+```{r, echo = T, eval = T, out.width = "33%"}
+set.seed(4250)
+
+simulate_strauss = function(k, tau0, phi0, phi1, ni = 1000) {
+  # simulate one strauss repulsion process over (0, 1)x(0, 1)
+  
+  # we define the interaction function
+  phi = function(tau) {
+    dist = sqrt(sum(tau^2))
+    if (dist <= tau0) {
+      return(phi0)
+    } else {
+      return(phi0 * exp(-phi1 * (dist - tau0)))
+    }
+  }
+  
+  # initalize where initial value has nonzero probability
+  result = matrix(0, nrow = k, ncol = 2)
+  
+  # the algorithm is asymptotically correct. Increase ni to imporove result
+  for (i in 1:ni) {
+    # choose one index uniformly
+    u = sample(1:k, 1)
+    
+    # generate a location uniformly
+    x_p = runif(n = 2)
+    
+    # compute acceptance probabilty alpha 
+    alpha = 0
+    for (j in 1:k) {
+      alpha = alpha + phi(result[u,] - result[j,]) - phi(x_p - result[j,])
+    }
+    alpha = exp(-alpha)
+    alpha = min(1, alpha)
+    
+    # accept or reject
+    if (runif(1) <= alpha) {
+      # accept
+      result[u,] = x_p
+    }
+    
+  }
+  
+  # returns a matrix where the rows are the observations
+  return(result)
+}
+
+```
+This algorithm also suffers from boundary bias, as we ignore possible contributions from events outside the boudary. 
+
+To get an empirical estimate of the model parameters, we study the biological cells dataset. There is a total of $42$ observations. Hence we set $k$ equal to $42$. To obtain estimates of $\tau_0, \phi_0$ and $\phi_1$, we proceed by trial and error. Values of $...$ respectively seems fitting. Iterating $1000$ times seems to work well. Below the biological cells data is compared with one realization of this model. 
+```{r, echo = F, eval = T, out.width = "33%"}
+set.seed(4250)
+
+# display the biological cell data
+cells_df = data.frame(x = data_cells$x, y = data_cells$y)
+
+p = ggplot(data = cells_df, aes(x=x, y=y)) + 
+  geom_point() + 
+  ggtitle("Biological cells data") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(p)
+
+# display the simulated data
+sim_mat = simulate_strauss(42, 1, 1, 1)
+
+sim_df = data.frame(x = sim_mat[,1], y = sim_mat[,2])
+
+p = ggplot(data = sim_df, aes(x=x, y=y)) + 
+  geom_point() + 
+  ggtitle("Strauss repulsion model realization") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(p)
+
+```
+
+We now want to justify our choice of parameters using an MCMC test on the $L$-function. We have done this below.
+```{r, echo = F, eval = T, out.width = "33%"}
+k_cells <- length(data_cells$y)
+L_matrix_cells <- matrix(NA, nrow = 100, ncol = length(cells_L$x))
+
+for (i in 1:100){
+  
+  sim_mat = simulate_strauss(42, 1, 1, 1)
+  sim_df = data.frame(x = sim_mat[,1], y = sim_mat[,2])
+  
+  ppinit("cells.dat")
+  ppregion()
+  L_matrix_cells[i,] = Kfn(df_cells,0.7)$y
+}
+
+pred_interval_cells <- apply(L_matrix_cells,2,sort)
+rownames(L_matrix_cells) = paste("trial", seq(100), sep="")
+colnames(L_matrix_cells) = paste("x", seq(length(cells_L$x)), sep="")
+
+dat_cells = as.data.frame(L_matrix_cells)
+dat_cells$trial = rownames(L_matrix_cells)
+mdat_cells = melt(dat_cells, id.vars="trial")
+mdat_cells$x = as.numeric(gsub("x", "", mdat_cells$variable))/100
+df_cells = data.frame(x = seq(0,1,length.out = 100), pred = cells_L$y, lb = pred_interval_cells[5,], ub = pred_interval_cells[95,])
+
+ggplot() +
+    theme_bw() +
+    theme(panel.grid=element_blank()) +
+    geom_line(data = mdat_cells, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
+    geom_line(data = df_cells, aes(x = x, y = pred), size = 1, col = 'red') + 
+    geom_line(data = df_cells, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
+    geom_line(data = df_cells, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Empirical Monte Carlo test for our choice of model parameters")
+```
+
+
 
 # References
