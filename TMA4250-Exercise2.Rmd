@@ -461,14 +461,13 @@ We now want to justify our choice of parameters using an MCMC test on the $L$-fu
 set.seed(425)
 k_redwood <- length(data_redwood$y)
 L_matrix_redwood <- matrix(NA, nrow = 100, ncol = length(redwood_L$x))
+ppinit("redwood.dat")
 
 for (i in 1:100){
   
   # simulate with our parameters
   sim_mat = simulate_neuman_scott(8, 7.75, 2.5e-3)
   df_redwood = data.frame(x = sim_mat[,1], y = sim_mat[,2])
-  
-  ppinit("redwood.dat")
   
   L_matrix_redwood[i,] = Kfn(df_redwood, fs = 0.7)$y
 }
@@ -574,13 +573,12 @@ plot(simulation, main = "Strauss repulsion model realization", xlab = "x", ylab 
 We now want to justify our choice of parameters using an MCMC test on the $L$-function. We have done this below.
 ```{r, echo = F, eval = T, out.width = "50%", fig.align = "center", fig.cap = "\\label{fig:StraussMonteCarlo}Empirical monte carlo test of our model parameters. We have computed the L-functions from 100 realizations of the Strauss repulsion model, and display these along with the 90$\\%$ interval and the L-function of the Celss data."}
 L_matrix_cells <- matrix(NA, nrow = 100, ncol = length(cells_L$x))
+ppinit("cells.dat")
 
 for (i in 1:100){
-  
   sim_mat = simulate_strauss(42, 0.4, 0.5, 0.5)
   df_cells = data.frame(x = sim_mat[,1], y = sim_mat[,2])
-  
-  ppinit("cells.dat")
+
   L_matrix_cells[i,] = Kfn(df_cells,0.7)$y
 }
 
