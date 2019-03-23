@@ -7,16 +7,17 @@ output:
   html_document:
     df_print: paged
 subtitle: 'Group members: Henrik Syversveen Lie, Øyvind Auestad'
-#references:
-#- id: Omre
-#  title: Bayesian Spatial Inversion with Conjugate Prior Models
-#  author:
-#  - family: Omre
-#    given: Henning
-#  type: article-journal
-#  issued:
-#    year: 2019
-#    month: 1
+header-includes: \usepackage{float}
+references:
+- id: Omre
+  title: Bayesian Spatial Inversion with Conjugate Prior Models
+  author:
+  - family: Omre
+    given: Henning
+  type: article-journal
+  issued:
+    year: 2019
+    month: 1
 ---
 
 
@@ -25,7 +26,7 @@ library(bookdown)
 library(formatR)
 showsol <- FALSE
 library(knitr)
-opts_chunk$set(tidy.opts = list(width.cutoff = 68), tidy = TRUE, warning = FALSE, error = FALSE, message = FALSE, echo = TRUE)
+opts_chunk$set(tidy.opts = list(width.cutoff = 68), tidy = TRUE, warning = FALSE, error = FALSE, message = FALSE, echo = TRUE, fig.pos = 'H')
 ```
 
 
@@ -384,12 +385,12 @@ Here, the differences between the prior and posterior model are more visible. We
 
 # Problem 3: Clustered event spatial variables
 
-The Neuman-Scott cluster model (mother-chid model) for event spatial variables is given below. The mother model is usually a stationary Possion RF with intensity $\lambda_M$. Centered at every mother location, $\boldsymbol{x}^M_j$, a set of child events are independently located, with event count given by the pdf $p(k^c)$ and intensity pdf $p(\boldsymbol{x}|\boldsymbol{x}^M_j)$. Censoring is done in order to make sure that the child-event is in $D$. The model can be expressed in terms of the event locations as $\mathbb{X}^{NS}_D = (\boldsymbol{x}_1, \boldsymbol{x}_2, \dots, \boldsymbol{x}_{k_D})$. The locations can also be expressed $\boldsymbol{x}_{ji}$ with $j = 1, \dots, k_D^M$, and $i = 1, \dots, k_{D_j}^c$ where $k_D = \sum_j k^c_{D_j}$, i. e. the i'th child of mother j. We then obtain 
+The Neuman-Scott cluster model (mother-chid model) for event spatial variables is given below. The mother model is usually a stationary Possion RF with intensity $\lambda_M$. Centered at every mother location, $\mathbf{x}^M_j$, a set of child events are independently located, with event count given by the pdf $p(k^c)$ and intensity pdf $p(\mathbf{x}|\mathbf{x}^M_j)$. Censoring is done in order to make sure that the child-event is in $D$. The model can be expressed in terms of the event locations as $\mathbb{X}^{NS}_D = (\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_{k_D})$. The locations can also be expressed $\mathbf{x}_{ji}$ with $j = 1, \dots, k_D^M$, and $i = 1, \dots, k_{D_j}^c$ where $k_D = \sum_j k^c_{D_j}$, i. e. the i'th child of mother j. We then obtain 
 \begin{align*}
-\mathbb{X}_D^{NS} &\sim p(\boldsymbol{x}_{ji};j=1,\dots,k_D^M; i=1,\dots,k_{D_j}^c)\\
-&= \prod_{j = 1}^{k^M_D} \bigg[ \prod_{i = 1}^{k^c_{D_j}} \frac{I(\boldsymbol{x}_{ji} \in D) p (\boldsymbol{x}_{ji}|\boldsymbol{x}^M_j)} {P(D | \boldsymbol{x}^M_j)} \bigg] \times p(k^c_{D_j} | k^c_j, \boldsymbol{x}^M_j) p(k^c_j) \times \frac{1}{|D|^{k^M_D}}p(k^M_D) \\
-&= \prod_{j = 1}^{k^M_D} \bigg[ \prod_{i = 1}^{k^c_{D_j}} \frac{I(\boldsymbol{x}_{ji} \in D) \phi_3(\boldsymbol{x}_{ji}; \boldsymbol{x}^M_j, \sigma^2_c I_3) } {\Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3)} \bigg]\\
-&\times {k^c_l \choose k^c_{D_j}} \Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3) \Big( 1 - \Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3) \Big)^{k^c_j - k^c_{D_j}} p(k^c_j) 
+\mathbb{X}_D^{NS} &\sim p(\mathbf{x}_{ji};j=1,\dots,k_D^M; i=1,\dots,k_{D_j}^c)\\
+&= \prod_{j = 1}^{k^M_D} \bigg[ \prod_{i = 1}^{k^c_{D_j}} \frac{I(\mathbf{x}_{ji} \in D) p (\mathbf{x}_{ji}|\mathbf{x}^M_j)} {P(D | \mathbf{x}^M_j)} \bigg] \times p(k^c_{D_j} | k^c_j, \mathbf{x}^M_j) p(k^c_j) \times \frac{1}{|D|^{k^M_D}}p(k^M_D) \\
+&= \prod_{j = 1}^{k^M_D} \bigg[ \prod_{i = 1}^{k^c_{D_j}} \frac{I(\mathbf{x}_{ji} \in D) \phi_2(\mathbf{x}_{ji}; \mathbf{x}^M_j, \sigma^2_c I_2) } {\Phi_2(D | \mathbf{x}^M_j, \sigma^2_c I_2)} \bigg]\\
+&\times {k^c_l \choose k^c_{D_j}} \Phi_2(D | \mathbf{x}^M_j, \sigma^2_c I_2) \Big( 1 - \Phi_2(D | \mathbf{x}^M_j, \sigma^2_c I_2) \Big)^{k^c_j - k^c_{D_j}} p(k^c_j) 
 \\
 &\times \frac{{\lambda_M}^{k^M_D}}{k^M_D!} \exp(-\lambda_M |D|),
 \end{align*}
@@ -468,7 +469,6 @@ for (i in 1:100){
   df_redwood = data.frame(x = sim_mat[,1], y = sim_mat[,2])
   
   ppinit("redwood.dat")
-  ppregion(xl = 0, xu = 1, yl = -1, yu = 0)
   
   L_matrix_redwood[i,] = Kfn(df_redwood, fs = 0.7)$y
 }
@@ -495,25 +495,23 @@ From figure \ref{fig:NSMonteCarlo}, we see that the $L$-function of the Redwood 
 
 # Problem 4: Repulsive event spatial variables 
 
-The Strauss repulsion model for event spatial variables conditioned on the event count $k_D$ is given below. The event locations $\mathbb{X}^S_D$ given the event count is distributed as follows
+The Strauss repulsion model for event spatial variables conditioned on the event count $k_D$ is given below. The event locations $\mathbb{X}^S_D$ given the event count is distributed as follows,
 $$
-\mathbb{X}^S_D | (k_D = k) \sim p(\boldsymbol{x} | k_D = k) \propto \Pi_{i, j \in \{1, \dots, k\}} \exp(-\phi(\boldsymbol{\tau}_{ij}))
+\big[\mathbb{X}^S_D | (k_D = k)\big] \sim p(\mathbf{x}_1,\dots,\mathbf{x}_k | k_D = k) \propto \prod_{i, j \in \{1, \dots, k\}} \exp(-\phi(\boldsymbol{\tau}_{ij})),
 $$
-with $\boldsymbol{\tau}_{ij} := \boldsymbol{x}_i - \boldsymbol{x}_j$ and where $\phi : \mathbb{R}^n \to \mathbb{R}$ is decreasing with increasing $\| \boldsymbol{\tau}_{ij} \|$. $\phi(.)$ is possibly anisotropic (BETYR DETTE AT DET ER ULIKE BIDRAG FOR FORKJELL I KOMPONENTENE?). A typical form of $\phi(.)$ is 
+with $\boldsymbol{\tau}_{ij} := \mathbf{x}_i - \mathbf{x}_j$ and $\phi(\boldsymbol{\tau}_{ij}) : \mathbb{R}^n \to \mathbb{R}_\oplus$ is decreasing with increasing $| \boldsymbol{\tau}_{ij} |$. $\phi(.)$ is possibly anisotropic with $\tau_{ij} = |\boldsymbol{\tau}_{ij}|\in\mathbb{R}_\oplus$ (BETYR DETTE AT DET ER ULIKE BIDRAG FOR FORKJELL I KOMPONENTENE?). A typical form of $\phi(.)$ is 
 $$
-\phi(\boldsymbol{\tau}) = 
+\phi(\tau) = 
 \begin{cases}
-  \phi_0, \ &\| \boldsymbol{\tau} \| \in [0, \tau_0] \\
-  \phi_0 \exp(-\phi_1 (\| \boldsymbol{\tau} \| - \tau_0)), \ &\| \boldsymbol{\tau} \| > \tau_0
+  \phi_0, \ &\tau  \in [0, \tau_0], \\
+  \phi_0 \exp(-\phi_1 (\tau - \tau_0)), \ &\tau \in [\tau_0,\infty),
 \end{cases}
 $$
-with model parameters $\boldsymbol{\theta}_{pS|k} = (\tau_0, \phi_0, \phi_1)$ all non-negative. WHAT IS WHAT p. 128. 
+with model parameters $\boldsymbol{\theta}_{pS|k} = (\tau_0, \phi_0, \phi_1)$ all positive ($\tau_0$ can be zero). WHAT IS WHAT p. 128. This gives a repulsive model, as it enforces penalites (lower probability) whenever events are located close to eachother.
 
-This Strauss event RF model is not analytically tractable, but we can simulate from it using the algorithm below
-```{r, echo = T, eval = T, out.width = "33%"}
-set.seed(4250)
-
-simulate_strauss = function(k, tau0, phi0, phi1, ni = 1000) {
+This Strauss event RF model is not analytically tractable, but we can simulate from it using the algorithm below.
+```{r, echo = T, eval = T}
+simulate_strauss = function(k, tau0, phi0, phi1, iterations = 1000) {
   # simulate one strauss repulsion process over (0, 1)x(0, 1)
   
   # we define the interaction function
@@ -527,10 +525,10 @@ simulate_strauss = function(k, tau0, phi0, phi1, ni = 1000) {
   }
   
   # initalize where initial value has nonzero probability
-  result = matrix(0, nrow = k, ncol = 2)
+  result = matrix(runif(k), nrow = k, ncol = 2)
   
-  # the algorithm is asymptotically correct. Increase ni to imporove result
-  for (i in 1:ni) {
+  # the algorithm is asymptotically correct. Increase iterations to imporove result
+  for (i in 1:iterations) {
     # choose one index uniformly
     u = sample(1:k, 1)
     
@@ -538,6 +536,7 @@ simulate_strauss = function(k, tau0, phi0, phi1, ni = 1000) {
     x_p = runif(n = 2)
     
     # compute acceptance probabilty alpha 
+    
     alpha = 0
     for (j in 1:k) {
       alpha = alpha + phi(result[u,] - result[j,]) - phi(x_p - result[j,])
@@ -550,9 +549,7 @@ simulate_strauss = function(k, tau0, phi0, phi1, ni = 1000) {
       # accept
       result[u,] = x_p
     }
-    
   }
-  
   # returns a matrix where the rows are the observations
   return(result)
 }
@@ -561,45 +558,29 @@ simulate_strauss = function(k, tau0, phi0, phi1, ni = 1000) {
 This algorithm also suffers from boundary bias, as we ignore possible contributions from events outside the boudary. 
 
 To get an empirical estimate of the model parameters, we study the biological cells dataset. There is a total of $42$ observations. Hence we set $k$ equal to $42$. To obtain estimates of $\tau_0, \phi_0$ and $\phi_1$, we proceed by trial and error. Values of $...$ respectively seems fitting. Iterating $1000$ times seems to work well. Below the biological cells data is compared with one realization of this model. 
-```{r, echo = F, eval = T, out.width = "33%"}
+```{r, echo = F, eval = T, out.width = "50%"}
 set.seed(4250)
 
 # display the biological cell data
-cells_df = data.frame(x = data_cells$x, y = data_cells$y)
 
-p = ggplot(data = cells_df, aes(x=x, y=y)) + 
-  geom_point() + 
-  ggtitle("Biological cells data") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-print(p)
+plot(data_cells, main = "Cells data", xlab = "x", ylab = "y")
 
 # display the simulated data
-sim_mat = simulate_strauss(42, 1, 1, 1)
 
-sim_df = data.frame(x = sim_mat[,1], y = sim_mat[,2])
-
-p = ggplot(data = sim_df, aes(x=x, y=y)) + 
-  geom_point() + 
-  ggtitle("Strauss repulsion model realization") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-print(p)
-
+simulation = simulate_strauss(42, 0.4, 0.5, 0.5)
+plot(simulation, main = "Strauss repulsion model realization", xlab = "x", ylab = "y")
 ```
 
 We now want to justify our choice of parameters using an MCMC test on the $L$-function. We have done this below.
-```{r, echo = F, eval = T, out.width = "33%"}
-k_cells <- length(data_cells$y)
+```{r, echo = F, eval = T, out.width = "50%", fig.align = "center", fig.cap = "\\label{fig:StraussMonteCarlo}Empirical monte carlo test of our model parameters. We have computed the L-functions from 100 realizations of the Strauss repulsion model, and display these along with the 90$\\%$ interval and the L-function of the Celss data."}
 L_matrix_cells <- matrix(NA, nrow = 100, ncol = length(cells_L$x))
 
 for (i in 1:100){
   
-  sim_mat = simulate_strauss(42, 1, 1, 1)
-  sim_df = data.frame(x = sim_mat[,1], y = sim_mat[,2])
+  sim_mat = simulate_strauss(42, 0.4, 0.5, 0.5)
+  df_cells = data.frame(x = sim_mat[,1], y = sim_mat[,2])
   
   ppinit("cells.dat")
-  ppregion()
   L_matrix_cells[i,] = Kfn(df_cells,0.7)$y
 }
 
@@ -610,16 +591,16 @@ colnames(L_matrix_cells) = paste("x", seq(length(cells_L$x)), sep="")
 dat_cells = as.data.frame(L_matrix_cells)
 dat_cells$trial = rownames(L_matrix_cells)
 mdat_cells = melt(dat_cells, id.vars="trial")
-mdat_cells$x = as.numeric(gsub("x", "", mdat_cells$variable))/100
-df_cells = data.frame(x = seq(0,1,length.out = 100), pred = cells_L$y, lb = pred_interval_cells[5,], ub = pred_interval_cells[95,])
+mdat_cells$x = as.numeric(gsub("x", "", mdat_cells$variable))/100*0.7
+df_cells = data.frame(x = seq(0,0.7,length.out = 100), pred = cells_L$y, lb = pred_interval_cells[5,], ub = pred_interval_cells[95,])
 
 ggplot() +
     theme_bw() +
     theme(panel.grid=element_blank()) +
-    geom_line(data = mdat_cells, aes(x=x, y=value, group=trial), size=0.2, alpha=0.1) +
-    geom_line(data = df_cells, aes(x = x, y = pred), size = 1, col = 'red') + 
-    geom_line(data = df_cells, aes(x = x, y = lb), size = 1, col = 'blue', linetype = "dashed") + 
-    geom_line(data = df_cells, aes(x = x, y = ub), size = 1, col = 'blue', linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Empirical Monte Carlo test for our choice of model parameters")
+    geom_line(data = mdat_cells, aes(x=x, y=value, group=trial, col = "Realizations"), size=0.2, alpha=0.1) +
+    geom_line(data = df_cells, aes(x = x, y = pred, col = "Cells data"), size = 1) + 
+    geom_line(data = df_cells, aes(x = x, y = lb, col = "5th percentile"), size = 1, linetype = "dashed") + 
+    geom_line(data = df_cells, aes(x = x, y = ub, col = "90th percentile"), size = 1, linetype = "dashed") + ylab("L(t)") + xlab("t") + ggtitle("Empirical Monte Carlo test for our choice of model parameters") + scale_color_manual(values = c("blue", "blue", "red", "grey"))
 ```
 
 
