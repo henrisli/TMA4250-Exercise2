@@ -2,10 +2,10 @@
 title: "TMA4250 Spatial Statistics Exercise 1, Spring 2019"
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
 output:
+  pdf_document: default
+  bookdown::html_document2: default
   html_document:
     df_print: paged
-  bookdown::html_document2: default
-  pdf_document: default
 subtitle: 'Group members: Henrik Syversveen Lie, Øyvind Auestad'
 #references:
 #- id: Omre
@@ -384,16 +384,16 @@ Here, the differences between the prior and posterior model are more visible. We
 
 ## Problem 3: Clustered event spatial variables
 
-The Neyman-Scott cluster model (mother-chid model) for event spatial variables is given below. The mother model is usually a stationary Possion RF with intensity $\lambda_M$. Centered at every mother location, $\boldsymbol{x}^M_j$, a set of child events are independently located, with event count given by the pdf $p(k^c)$ and intensity pdf $p(\boldsymbol{x}|\boldsymbol{x}^M_j)$. Censoring is done in order to make sure that the child-event is in D. The model can be expressed in terms of the event locations as $\mathbb{X}^{NS}_D = (\boldsymbol{x}_1, \boldsymbol{x}_2, \dots, \boldsymbol{x}_{k_D})$. The locations can also be expressed $\boldsymbol{x}_{ji}$ with $j = 1, \dots, k_D^M$, and $i = 1, \dots, k_{D_j}^c$ where $k_D = \sum_j k^c_{D_j}$, i. e. the i'th child of mother j. We then obtain 
-
-$$
-\mathbb{X}_D^{NS} \sim p(\boldsymbol{x}) = \Pi_{j = 1}^{k^M_D} \bigg[ \Pi_{i = 1}^{k^c_{D_j}} \frac{I(\boldsymbol{x}_{ji} \in D) p (\boldsymbol{x}_{ji}|\boldsymbol{x}^M_j)} {P(D | \boldsymbol{x}^M_j)} \bigg] \times p(k^c_{D_j} | k^c_j, \boldsymbol{x}^M_j) p(k^c_j) \times \frac{1}{|D|^{k^M_D}}p(k^M_D) \\
-= \Pi_{j = 1}^{k^M_D} \bigg[ \Pi_{i = 1}^{k^c_{D_j}} \frac{I(\boldsymbol{x}_{ji} \in D) \phi_3(\boldsymbol{x}_{ji}; \boldsymbol{x}^M_j, \sigma^2_c I_3) } {\Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3)} \bigg] \times {k^c_l \choose k^c_{D_j}} \Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3) \Big( 1 - \Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3) \Big)^{k^c_j - k^c_{D_j}} p(k^c_j) 
-\\ \times \frac{{\lambda_M}^{k^M_D}}{k^M_D!} \exp(-\lambda_M |D|)
-$$
-SE IGJENNOM OG GJØR KONSISTENT MED MATHBF ETC.
-
-Where $k^j_{D_j} \leq k^c_j}$ The latter equality corresponds to the case of a mother-child model with a stationary Poission RF as mother model, having intensity $\lambda_M$, and a Gaussian intensity child-model with spread $\sigma^2_c$ where the child set size is given by $p(k^c_j)$. The parameters of this model is $\boldsymbol{\theta}_{pNS} = (\lambda_M, \sigma^2_c, p(.))$. EXPLAIN WHAT IS WHAT
+The Neuman-Scott cluster model (mother-chid model) for event spatial variables is given below. The mother model is usually a stationary Possion RF with intensity $\lambda_M$. Centered at every mother location, $\boldsymbol{x}^M_j$, a set of child events are independently located, with event count given by the pdf $p(k^c)$ and intensity pdf $p(\boldsymbol{x}|\boldsymbol{x}^M_j)$. Censoring is done in order to make sure that the child-event is in $D$. The model can be expressed in terms of the event locations as $\mathbb{X}^{NS}_D = (\boldsymbol{x}_1, \boldsymbol{x}_2, \dots, \boldsymbol{x}_{k_D})$. The locations can also be expressed $\boldsymbol{x}_{ji}$ with $j = 1, \dots, k_D^M$, and $i = 1, \dots, k_{D_j}^c$ where $k_D = \sum_j k^c_{D_j}$, i. e. the i'th child of mother j. We then obtain 
+\begin{align*}
+\mathbb{X}_D^{NS} &\sim p(\boldsymbol{x}_{ji};j=1,\dots,k_D^M; i=1,\dots,k_{D_j}^c)\\
+&= \Pi_{j = 1}^{k^M_D} \bigg[ \Pi_{i = 1}^{k^c_{D_j}} \frac{I(\boldsymbol{x}_{ji} \in D) p (\boldsymbol{x}_{ji}|\boldsymbol{x}^M_j)} {P(D | \boldsymbol{x}^M_j)} \bigg] \times p(k^c_{D_j} | k^c_j, \boldsymbol{x}^M_j) p(k^c_j) \times \frac{1}{|D|^{k^M_D}}p(k^M_D) \\
+&= \Pi_{j = 1}^{k^M_D} \bigg[ \Pi_{i = 1}^{k^c_{D_j}} \frac{I(\boldsymbol{x}_{ji} \in D) \phi_3(\boldsymbol{x}_{ji}; \boldsymbol{x}^M_j, \sigma^2_c I_3) } {\Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3)} \bigg]\\
+&\times {k^c_l \choose k^c_{D_j}} \Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3) \Big( 1 - \Phi_3(D | \boldsymbol{x}^M_j, \sigma^2_c I_3) \Big)^{k^c_j - k^c_{D_j}} p(k^c_j) 
+\\
+&\times \frac{{\lambda_M}^{k^M_D}}{k^M_D!} \exp(-\lambda_M |D|),
+\end{align*}
+where $k^j_{D_j} \leq k^c_j$. The latter expression corresponds to the case of a mother-child model with a stationary Poission RF as mother model, having intensity $\lambda_M$, and a Gaussian intensity child-model with spread $\sigma^2_c$ where the child set size is given by $p(k^c_j)$. The parameters of this model are $\boldsymbol{\theta}_{pNS} = (\lambda_M, \sigma^2_c, p(.))$. EXPLAIN WHAT IS WHAT
 
 This model is not analytically tractable, but we can sample from it using the following algorithm
 ```{r, echo = T, eval = T, out.width = "33%"}
