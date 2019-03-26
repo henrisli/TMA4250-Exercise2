@@ -1,5 +1,5 @@
 --- 
-title: "TMA4250 Spatial Statistics Exercise 1, Spring 2019"
+title: "TMA4250 Spatial Statistics Exercise 2, Spring 2019"
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
 output:
   pdf_document: default
